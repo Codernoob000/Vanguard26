@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vanguard26 — Frontend Unit Tests</title>
+  <style>
+    body {
+      background-color: #0f172a;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px;
+    }
+    h1 {
+      border-bottom: 2px solid #334155;
+      padding-bottom: 10px;
+    }
+    .test-case {
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      border-left: 5px solid;
+    }
+    .pass {
+      background-color: rgba(16, 185, 129, 0.15);
+      border-left-color: #10b981;
+    }
+    .fail {
+      background-color: rgba(239, 68, 68, 0.15);
+      border-left-color: #ef4444;
+    }
+    .summary {
+      font-size: 1.2rem;
+      margin-top: 30px;
+      padding: 15px;
+      background: #1e293b;
+      border-radius: 6px;
+    }
+  </style>
+  <script src="../scripts/utils.js"></script>
+</head>
+<body>
+  <h1>Vanguard26 Frontend Unit Test Suite</h1>
+  <div id="test-results">Running tests...</div>
+  <div id="summary" class="summary"></div>
+
+  <script>
+    const resultsContainer = document.getElementById('test-results');
+    const summaryContainer = document.getElementById('summary');
+    let total = 0;
+    let passed = 0;
+
+    function assert(condition, message) {
+      total++;
+      const el = document.createElement('div');
+      if (condition) {
+        passed++;
+        el.className = 'test-case pass';
+        el.textContent = `✓ [PASS] ${message}`;
+      } else {
+        el.className = 'test-case fail';
+        el.textContent = `✗ [FAIL] ${message}`;
+      }
+      resultsContainer.appendChild(el);
+    }
+
+    // Run Frontend utils tests
+    resultsContainer.innerHTML = '';
+    
+    // Test 1: HTML Escaping
+    try {
+      const rawXss = '<script>alert("xss")<\/script>';
+      const escaped = escapeHtml(rawXss);
+      assert(!escaped.includes('<') && !escaped.includes('>'), 'escapeHtml escapes tag angles');
+      assert(escaped.includes('&lt;script&gt;'), 'escapeHtml outputs standard HTML entity matches');
+    } catch(e) {
+      assert(false, `escapeHtml execution error: ${e.message}`);
+    }
+
+    // Test 2: HTML Sanitizer micro-engine (Rule 11)
+    try {
+      const dirtyHtml = '<p>Safe paragraph</p><iframe src="x"></iframe><script>bad()<\/script>';
+      const clean = sanitizeHtml(dirtyHtml);
+      assert(clean.includes('<p>Safe paragraph</p>'), 'sanitizeHtml retains allowed tags');
+      assert(!clean.includes('<iframe'), 'sanitizeHtml scrubs unallowed iframe tags');
+      assert(!clean.includes('<script'), 'sanitizeHtml scrubs dangerous script structures');
+    } catch(e) {
+      assert(false, `sanitizeHtml execution error: ${e.message}`);
+    }
+
+    // Test 3: Markdown parser
+    try {
+      const md = 'Hello **world** with *italics*\n- item 1\n- item 2';
+      const html = parseMarkdown(md);
+      assert(html.includes('<strong>world</strong>'), 'parseMarkdown translates bold tags');
+      assert(html.includes('<em>italics</em>'), 'parseMarkdown translates italics tags');
+      assert(html.includes('<ul><li>item 1</li>'), 'parseMarkdown translates unordered lists');
+    } catch(e) {
+      assert(false, `parseMarkdown execution error: ${e.message}`);
+    }
+
+    // Test 4: Debouncing
+    try {
+      let count = 0;
+      const increment = () => { count++; };
+      const debounced = debounce(increment, 50);
+      debounced();
+      debounced();
+      debounced();
+      setTimeout(() => {
+        assert(count === 1, 'debounce aggregates multiple rapid calls to 1 execute block');
+      }, 100);
+    } catch(e) {
+      assert(false, `debounce execution error: ${e.message}`);
+    }
+
+    // Summarize
+    setTimeout(() => {
+      summaryContainer.textContent = `Total tests: ${total} | Passed: ${passed} | Failed: ${total - passed}`;
+    }, 150);
+  </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none';">
+  <meta name="description" content="Vanguard26 — FIFA World Cup 2026 Intelligent Stadium Operations & Fan Co-Pilot platform. Providing real-time crowd dynamics, AI incident triaging, and accessible route guiding.">
+  <title>Vanguard26 — FIFA World Cup 2026 Smart Stadium Command</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/dashboard.css">
+  <script defer src="scripts/config.js"></script>
+  <script defer src="scripts/utils.js"></script>
+  <script defer src="scripts/api.js"></script>
+  <script defer src="scripts/app.js"></script>
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <span class="logo-icon" aria-hidden="true">⚽</span>
+        <div class="logo-text">
+          <h1>Vanguard26</h1>
+          <span class="subtitle">FIFA 2026 Stadium Operations Hub</span>
+        </div>
+      </div>
+
+      <nav class="tab-nav" role="tablist" aria-label="Application Sections">
+        <button id="tab-fan" class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-fan" tabindex="0">
+          <span class="icon">🧭</span> Fan Co-Pilot
+        </button>
+        <button id="tab-ops" class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-ops" tabindex="-1">
+          <span class="icon">🛡️</span> Ops Command Center
+        </button>
+      </nav>
+
+      <div class="header-controls">
+        <label for="lang-selector" class="sr-only">Select Language</label>
+        <select id="lang-selector" class="lang-select">
+          <option value="en">English (EN)</option>
+          <option value="es">Español (ES)</option>
+          <option value="fr">Français (FR)</option>
+        </select>
+        <span class="badge live-badge">● LIVE METLIFE</span>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="main-layout">
+    
+    <!-- FAN CO-PILOT TAB PANEL -->
+    <section id="panel-fan" class="tab-panel active" role="tabpanel" aria-labelledby="tab-fan" tabindex="0">
+      <div class="grid-container fan-grid">
+        
+        <!-- Live Stadium Stats Bento Card -->
+        <div class="bento-card stats-sidebar">
+          <h2 class="card-title"><span class="icon">📊</span> Stadium Status</h2>
+          <div class="status-list">
+            <div class="status-item">
+              <div class="status-meta">
+                <span class="label">Weather</span>
+                <span class="val">Clear, 24°C</span>
+              </div>
+              <div class="progress-bar-bg" aria-hidden="true"><div class="progress-bar-fill green-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="status-item">
+              <div class="status-meta">
+                <span class="label">Gate A Queue</span>
+                <span class="val" id="queue-gate-a">5 mins wait</span>
+              </div>
+              <div class="progress-bar-bg" aria-hidden="true"><div class="progress-bar-fill green-fill" style="width: 15%;"></div></div>
+            </div>
+            <div class="status-item">
+              <div class="status-meta">
+                <span class="label">Gate B Queue</span>
+                <span class="val" id="queue-gate-b">35 mins wait</span>
+              </div>
+              <div class="progress-bar-bg" aria-hidden="true"><div class="progress-bar-fill red-fill" style="width: 85%;"></div></div>
+            </div>
+            <div class="status-item">
+              <div class="status-meta">
+                <span class="label">Accessibility Lanes</span>
+                <span class="val">Fully Operational</span>
+              </div>
+              <div class="progress-bar-bg" aria-hidden="true"><div class="progress-bar-fill green-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="status-item">
+              <div class="status-meta">
+                <span class="label">Train Transit</span>
+                <span class="val">On Schedule</span>
+              </div>
+              <div class="progress-bar-bg" aria-hidden="true"><div class="progress-bar-fill green-fill" style="width: 95%;"></div></div>
+            </div>
+          </div>
+          
+          <div class="quick-helpers">
+            <h3>Suggested Prompts</h3>
+            <button class="helper-btn" data-prompt="Where is the closest accessible elevator?">♿ Accessible Elevators</button>
+            <button class="helper-btn" data-prompt="Which gate has the shortest queue right now?">⏱️ Shortest Entry Gate</button>
+            <button class="helper-btn" data-prompt="How do I get to public transit after the match?">🚇 Transit Information</button>
+          </div>
+        </div>
+
+        <!-- Interactive AI Chat Bento Card -->
+        <div class="bento-card chat-area">
+          <div class="chat-header">
+            <h2>Stadium AI Co-Pilot</h2>
+            <p>Ask anything about navigation, crowd status, language support, or accessibility.</p>
+          </div>
+
+          <div id="chat-messages" class="chat-messages" aria-live="polite">
+            <div class="msg ai-msg">
+              <div class="msg-content">
+                Welcome to MetLife Stadium! I am your Intelligent Co-Pilot for the FIFA World Cup 2026. How can I help you navigate the stadium today?
+              </div>
+              <span class="msg-time">Just now</span>
+            </div>
+          </div>
+
+          <div id="chat-loading" class="chat-loading hidden" aria-hidden="true">
+            <div class="spinner"></div>
+            <span>AI is processing current stadium data...</span>
+          </div>
+
+          <form id="chat-form" class="chat-form">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Type your query here..." required autocomplete="off" aria-label="Query for Stadium AI Co-Pilot">
+            <button type="submit" class="submit-btn" aria-label="Send query">Send ➔</button>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- OPERATIONS COMMAND CENTER TAB PANEL -->
+    <section id="panel-ops" class="tab-panel" role="tabpanel" aria-labelledby="tab-ops" tabindex="-1" aria-hidden="true">
+      
+      <!-- Staff Access Pin Overlay (Taha Security: Basic Access Authentication) -->
+      <div id="ops-lock-screen" class="ops-lock-screen">
+        <div class="lock-card">
+          <h2>🔒 Authorized Personnel Only</h2>
+          <p>Please enter the Operations PIN code to access the command console.</p>
+          <form id="lock-form" class="lock-form">
+            <input type="password" id="lock-pin" class="lock-input" placeholder="Enter PIN (Default: 2026)" required aria-label="Operations PIN Code">
+            <button type="submit" class="lock-btn">Unlock Console</button>
+            <p id="lock-error" class="error-msg hidden" role="alert"></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="grid-container ops-grid hidden" id="ops-dashboard-content">
+        
+        <!-- Bento 1: Dynamic Incident Logger -->
+        <div class="bento-card incident-logger">
+          <h2 class="card-title"><span class="icon">📝</span> Report New Incident</h2>
+          <form id="incident-form" class="incident-form">
+            <div class="form-group">
+              <label for="inc-type">Incident Type</label>
+              <select id="inc-type" required>
+                <option value="medical">Medical Assistance Required</option>
+                <option value="crowd">Crowd Congestion / Blockage</option>
+                <option value="accessibility">Accessibility Barrier / Elevator Issue</option>
+                <option value="security">Security Violation / Conflict</option>
+                <option value="sustainability">Waste / Cleanup Request</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="inc-location">Location / Sector</label>
+              <select id="inc-location" required>
+                <option value="Sector 101">Sector 101 (Lower Bowl)</option>
+                <option value="Sector 205">Sector 205 (Mid Tier)</option>
+                <option value="Sector 315">Sector 315 (Upper Deck)</option>
+                <option value="Gate A Plaza">Gate A Entrance Plaza</option>
+                <option value="Transit Concourse">West Transit Concourse</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="inc-details">Details / Observation</label>
+              <textarea id="inc-details" rows="3" placeholder="Provide raw details (e.g. spectator feeling dizzy due to heat, crowd cluster forming near ramp...)" required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn full-width">Log Incident & Run Triage</button>
+          </form>
+        </div>
+
+        <!-- Bento 2: Active Incident Monitoring Board -->
+        <div class="bento-card incident-board">
+          <h2 class="card-title"><span class="icon">🚨</span> Live Triage Board</h2>
+          <div class="board-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="high">High</button>
+            <button class="filter-btn" data-filter="medium">Medium</button>
+            <button class="filter-btn" data-filter="low">Low</button>
+          </div>
+          <div id="incident-list" class="incident-list">
+            <!-- Populated dynamically -->
+            <div class="no-incidents">No active incidents reported.</div>
+          </div>
+        </div>
+
+        <!-- Bento 3: AI Advisor Dispatch Assistant -->
+        <div class="bento-card dispatch-advisor">
+          <h2 class="card-title"><span class="icon">🤖</span> AI Dispatch Planner</h2>
+          <div id="dispatch-details" class="dispatch-details">
+            <div class="empty-state">
+              <p>Select an incident from the Live Triage Board to generate automated triage classifications and resource dispatch recommendations.</p>
+            </div>
+          </div>
+          <div id="dispatch-loading" class="dispatch-loading hidden" aria-hidden="true">
+            <div class="spinner"></div>
+            <span>AI generating deployment plans...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>&copy; 2026 FIFA World Cup Stadium Operations. Built with strict Security & Accessibility principles.</p>
+      <div class="footer-meta">
+        <span>WCAG 2.1 AA Compliant</span> | <span>Secured by Taha's Rules</span>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
