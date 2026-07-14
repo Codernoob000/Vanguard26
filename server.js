@@ -215,7 +215,7 @@ app.post('/api/co-pilot', llmLimiter, async (req, res) => {
             { role: 'system', content: systemInstructions },
             { role: 'user', content: `Context:\n${stadiumContext}\n\nUser Query: ${cleanMsg}` }
           ],
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           max_tokens: 500,
           temperature: 0.3
         });
@@ -269,7 +269,7 @@ app.post('/api/dispatch', verifyOperationsHeader, async (req, res) => {
           messages: [
             { role: 'user', content: prompt }
           ],
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           max_tokens: 400,
           temperature: 0.2
         });
