@@ -19,14 +19,18 @@ let aiClient = null;
 if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your_groq_api_key_here') {
   try {
     aiClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    console.log("🏆 Groq Client successfully initialized.");
   } catch (err) {
-    // Graceful error logging
+    console.error("❌ Failed to initialize Groq Client:", err);
   }
+} else {
+  console.log("⚠️ Groq API key missing or unconfigured. Operating in fallback mode.");
 }
 
 /* ==========================================
    SECURITY RULES & MIDDLEWARE CONFIGURATION
    ========================================== */
+
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -221,15 +225,18 @@ app.post('/api/co-pilot', llmLimiter, async (req, res) => {
         });
         aiReply = chatCompletion.choices[0].message.content;
       } catch (err) {
+        console.error("❌ Groq Co-Pilot Completion Call Failed. Triggering local fallback. Error:", err.message || err);
         aiReply = getLocalFanFallback(cleanMsg, lang);
       }
     } else {
+      console.log("ℹ️ Operating Co-Pilot in local fallback mode (Groq client unconfigured).");
       aiReply = getLocalFanFallback(cleanMsg, lang);
     }
 
     const sanitizedReply = aiReply.replace(/[<>]/g, '');
     return res.json({ reply: sanitizedReply });
   } catch (err) {
+    console.error("❌ Failed to process co-pilot request handler:", err.message || err);
     return res.status(400).json({ error: 'Failed to process chat query.' });
   }
 });
@@ -277,9 +284,11 @@ app.post('/api/dispatch', verifyOperationsHeader, async (req, res) => {
         const rawText = chatCompletion.choices[0].message.content.trim();
         triageResult = JSON.parse(rawText);
       } catch (err) {
+        console.error("❌ Groq Dispatch completion failure. Triggering local fallback triage. Error:", err.message || err);
         triageResult = getLocalTriageFallback(incident);
       }
     } else {
+      console.log("ℹ️ Operating Triage Advisor in local fallback mode.");
       triageResult = getLocalTriageFallback(incident);
     }
 
@@ -292,6 +301,7 @@ app.post('/api/dispatch', verifyOperationsHeader, async (req, res) => {
       }
     });
   } catch (err) {
+    console.error("❌ Failed to process dispatch handler:", err.message || err);
     return res.status(500).json({ error: 'Failed to process triage dispatch planning.' });
   }
 });
